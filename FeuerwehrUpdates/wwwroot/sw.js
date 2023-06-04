@@ -1,9 +1,4 @@
 self.addEventListener("notificationclick", (event) => {
-    console.log("Hello clicked Notification.");
-    console.log(event.notification.data.operationid);
-    console.log(event.notification.data.articlelink + " lolol");
-    console.log(event.action);
-    
     if (event.notification.action === "showmore") {
         event.waitUntil(clients.openWindow("/?operationid=" + event.notification.data.operationid));
         event.notification.close();
@@ -26,14 +21,10 @@ const urlB64ToUint8Array = base64String => {
 }
 
 const saveSubscription = async subscription => {
-  var payloadObject = {
-    title: "TITLEW",
-    message: "message"
-};
-  //const SERVER_URL = 'https://feuerwehrupdates.melonthedev.wtf/api/Subscription/Save'
-  const SERVER_URL = 'https://localhost:7047/api/Subscription/Save'
+  const SERVER_URL = 'https://feuerwehrupdates.melonthedev.wtf/api/Subscription/Save'
+  //const SERVER_URL = 'https://localhost:7047/api/Subscription/Save'
   const response = await fetch(SERVER_URL, {
-    method: 'post',
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -43,6 +34,14 @@ const saveSubscription = async subscription => {
 }
 
 self.addEventListener('activate', async () => {
+  console.debug("[ServiceWorker] Activated!")
+});
+
+self.addEventListener('message', (e) => {
+  if (e.data.cmd == "subscribe") createSubscription();
+})
+
+async function createSubscription() {
   try {
     const applicationServerKey = urlB64ToUint8Array('BH-9RrroeoEqN37m3SHxOVU97dSOEud8mrkyFAp-O8clW3zNdHjvfwfZ6vwkiR61gob7UqQALHOEoG57qTaK6B4')
     const options = { applicationServerKey, userVisibleOnly: true }
@@ -52,41 +51,29 @@ self.addEventListener('activate', async () => {
     const response = await saveSubscription(subscription)
     console.log(response)
   } catch (err) {
-    console.log('Error', err)
+    console.error('Error', err)
   }
-});
+}
 
 self.addEventListener('push', (event) => {
   if (!event.data) return;
   const data = event.data.json();
-  event.waitUntil(sendNotification(data.title, data.content, data.tag, data.presslink, "123"));
+  console.debug(data);
+  event.waitUntil(sendNotification(data.Title, data.Content, data.Tag, data.PressLink, data.Id));
 });
 
 function sendNotification(title, content, tag, presslink, id) {
+  let buttons = [{ action: "showmore", title: "Mehr infos" }];
+  if (presslink != null && presslink !== "") 
+    buttons = [{ action: "showmore", title: "Mehr infos" }, { action: "openarticle", title: "Presseartikel" }];
+
   const options = {
     body: content,
     icon: "./image.png",
     badge: "./badge.png",
     tag: tag,
-    actions: [{ action: "showmore", title: "Mehr infos" }, { action: "openarticle", title: "Presseartikel" }],
-    data: { "operationid" : "123", "articlelink" : presslink }
+    actions: buttons,
+    data: { "operationid" : id, "articlelink" : presslink }
   }
   this.registration.showNotification(title, options);
 }
-
-
-
-
-/*  const text = "02:28 Uhr - 20 - B\nEinsatzort: Dietershan\nFahrzeuge: 46, 19\nDauer: 15.04.2023 02:28 Uhr - 03:15 Uhr\nSchleifen: 2, Kleinalarm";
-  const titleold = "Einsatz: F2 Zimmerbrand";
-  const optionsold = {
-    body: text,
-    icon: "./image.png",
-    vibrate: [200, 100, 200],
-    tag: "neuer-einsatz",
-    //image: img,
-    badge: "./badge.png",
-    actions: [{ action: "showmore", title: "Mehr infos" }, { action: "openarticle", title: "Presseartikel" }],
-    data: { "operationid" : "123", "articlelink" : "https://osthessen-news.de/" }
-  };
-*/

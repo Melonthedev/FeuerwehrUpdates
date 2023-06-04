@@ -2,10 +2,10 @@
 {
     public class Subscription
     {
-        public string endpoint { get; set; }
+        public string Endpoint { get; set; }
 
-        public long? expirationTime { get; set; }
+        public long? ExpirationTime { get; set; }
 
-        public Keys keys { get; set; }
+        public Keys Keys { get; set; }
     }
 }

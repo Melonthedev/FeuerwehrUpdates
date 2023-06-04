@@ -12,19 +12,26 @@ function registerServiceWorker() {
 }
 
 function sendNotification() {
-  const text = "02:28 Uhr - 20 - B\nEinsatzort: Dietershan\nFahrzeuge: 46, 19\nDauer: 15.04.2023 02:28 Uhr - 03:15 Uhr\nSchleifen: 2, Kleinalarm";
-  const title = "Einsatz: F2 Zimmerbrand";
+  const text = "20-B: 18:37 Uhr\nEinsatzort: Mond\nFahrzeuge: 46, 19\nDauer: " + new Date().toLocaleDateString() + " 18:37 Uhr - 19:15 Uhr\nSchleifen: 2, Kleinalarm";
+  const title = "Einsatz: F2 Fahrzeugbrand";
   const options = {
     body: text,
     icon: "./image.png",
-    vibrate: [200, 100, 200],
     tag: "neuer-einsatz",
-    //image: img,
     badge: "./badge.png",
     actions: [{ action: "showmore", title: "Mehr infos" }, { action: "openarticle", title: "Presseartikel" }],
-    data: { "operationid" : "123", "articlelink" : "https://osthessen-news.de/" }
+    data: { "operationid" : "demo", "articlelink" : "https://youtu.be/dQw4w9WgXcQ" }
   };
   navigator.serviceWorker.ready.then((serviceWorker) => {
     serviceWorker.showNotification(title, options);
   });
 }
+
+
+/*
+.then((registration) => {
+    registration.addEventListener('activate', async () => {
+      confirm("DEBUG")
+      console.debug("[ServiceWorker] Activated!")
+    });
+  });*/

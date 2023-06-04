@@ -1,0 +1,49 @@
+* {
+    padding: 0;
+    margin: 0;
+    font-family: "Cascadia Code", Arial, Helvetica, sans-serif;
+    text-align: center;
+    color: white;
+}
+
+html {
+    background-color: rgb(46, 46, 46);
+}
+
+h1 {
+    font-size: 250%;
+    margin: 30px;
+}
+
+
+img {
+    display: block;
+    margin: auto;
+    margin-top: 40px;
+}
+
+.content {
+    display: block;
+}
+
+button {
+    margin: 20px;
+    padding: 20px;
+    background-color: transparent;
+    border: 1px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.5s;
+}
+
+button:hover {
+    background-color: rgba(92, 92, 92, 0.863);
+}
+
+#click {
+    background-color: rgba(0, 255, 255, 0.568);
+}
+
+#click:hover {
+    background-color: rgba(0, 255, 255, 0.863);
+}
