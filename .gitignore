@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/FeuerwehrUpdates/database.db
+/FeuerwehrUpdates/database.db-shm
+/FeuerwehrUpdates/database.db-wal
