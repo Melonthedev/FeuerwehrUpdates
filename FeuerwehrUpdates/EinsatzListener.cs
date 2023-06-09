@@ -2,6 +2,7 @@
 using FeuerwehrUpdates.Models;
 using FeuerwehrUpdates.Services;
 using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
 
 namespace FeuerwehrUpdates
 {
@@ -23,6 +24,10 @@ namespace FeuerwehrUpdates
 
         public void Initialize()
         {
+            httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue
+            {
+                NoCache = true
+            };
             Task CheckForChanges = PeriodicAsync(async () =>
             {
                 try
