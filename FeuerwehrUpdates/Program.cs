@@ -33,7 +33,7 @@ using (var scope = app.Services.CreateScope())
     IDbContextFactory<FWUpdatesDbContext> contextFactory =
             scope.ServiceProvider.GetRequiredService<IDbContextFactory<FWUpdatesDbContext>>();
     //new EinsatzListener(contextFactory);
-    new EinsatzListener(services.GetService<PushService>(), services.GetService<IOptions<FUOptions>>());
+    new EinsatzListener(services.GetService<PushService>(), services.GetService<IOptions<FUOptions>>(), services.GetService<ILogger<EinsatzListener>>());
 
     try
     {

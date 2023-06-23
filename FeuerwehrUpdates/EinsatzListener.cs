@@ -1,4 +1,5 @@
-﻿using AngleSharp.Html.Parser;
+﻿using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using FeuerwehrUpdates.Models;
 using FeuerwehrUpdates.Services;
 using Microsoft.Extensions.Options;
@@ -12,13 +13,16 @@ namespace FeuerwehrUpdates
         private readonly HttpClient httpClient = new();
         private readonly PushService _pushService;
         private readonly FUOptions _options;
+        private readonly ILogger<EinsatzListener> _logger;
 
         public string? currentOperationId;
+        public Einsatz? currentEinsatz;
 
-        public EinsatzListener(PushService pushService, IOptions<FUOptions> options)
+        public EinsatzListener(PushService pushService, IOptions<FUOptions> options, ILogger<EinsatzListener> logger)
         {
             _pushService = pushService;
             _options = options.Value;
+            _logger = logger;
             Initialize();
         }
 
@@ -28,72 +32,90 @@ namespace FeuerwehrUpdates
             {
                 NoCache = true
             };
+
             Task CheckForChanges = PeriodicAsync(async () =>
             {
                 try
                 {
                     var querySelector = _options.QuerySelectorLatestOperation;
                     var response = await httpClient.GetStringAsync(_options.DocumentUrl);
-                    await Console.Out.WriteLineAsync($"Getting latest EINSATZinformationen with querySelector: ({querySelector})");
-                    await Console.Out.WriteLineAsync("Fetching HTML...");
+                    _logger.LogInformation($"Getting latest EINSATZinformationen with querySelector: ({querySelector})");
+                    _logger.LogInformation("Fetching HTML...");
 
-                    await Console.Out.WriteLineAsync("Parsing HTML...");
+                    _logger.LogInformation("Parsing HTML...");
                     var parser = new HtmlParser();
                     var document = await parser.ParseDocumentAsync(response);
                     var latestOperationEntry = document.QuerySelector(querySelector);
 
-                    if (latestOperationEntry == null)
+                    Einsatz? einsatz = await ParseEinsatzFromEntry(latestOperationEntry);
+                    if (einsatz is null) return;
+                    string tag = "neuer-einsatz";
+
+                    if (currentEinsatz == null)
                     {
-                        await Console.Out.WriteLineAsync("Latest operationentry not found!");
+                        currentEinsatz = einsatz;
+                        _logger.LogWarning("Current einsatz not set! Setting current einsatz.");
                         return;
                     }
 
-                    var einsatzId = latestOperationEntry.QuerySelector("td:nth-child(2)").TextContent.Trim().Replace(" ", string.Empty);
-                    var einsatzDatum = latestOperationEntry.QuerySelector("td:nth-child(3)").TextContent.Trim();
-                    var einsatzStart = latestOperationEntry.QuerySelector("td:nth-child(4)").TextContent.Trim();
-                    var einsatzStichwort = latestOperationEntry.QuerySelector("td:nth-child(5)").TextContent.Trim();
-                    var einsatzOrt = latestOperationEntry.QuerySelector("td:nth-child(6)").TextContent.Trim();
-                    var einsatzFahrzeuge = latestOperationEntry.QuerySelector("td:nth-child(7)").TextContent.Trim();
-                    var einsatzEnde = latestOperationEntry.QuerySelector("td:nth-child(8)").TextContent.Trim();
-                    var schleife = latestOperationEntry.QuerySelector("td:nth-child(9)").TextContent.Trim();
-                    var presseLinkElement = latestOperationEntry.QuerySelector("td:nth-child(10) a");
-                    var presseLink = presseLinkElement == null ? null : presseLinkElement.Attributes.FirstOrDefault(attr => attr.Name == "href").Value;
-
-                    await Console.Out.WriteLineAsync("Einsatz ID: " + einsatzId + "\nEinsatz Datum: " + einsatzDatum + "\nALARRRRMMM: " + einsatzStart 
-                        + "\nWat los?: " + einsatzStichwort + "\nEinsatz Ort: " + einsatzOrt + "\nFahrzeuge: " + einsatzFahrzeuge 
-                        + "\nEinsatz Ende: " + einsatzEnde + "\nSchleife: " + schleife + "\nPresseartikel: " + presseLink);
-
-                    if (currentOperationId == null)
+                    if (currentEinsatz.Id == einsatz.Id)
                     {
-                        currentOperationId = einsatzId;
-                        await Console.Out.WriteLineAsync("Setting current operation id.");
+                        _logger.LogInformation("No new entry detected.");
                         return;
                     }
 
-                    if (currentOperationId == einsatzId)
-                    {
-                        await Console.Out.WriteLineAsync("No new entry detected.");
-                        return;
-                    }
+                    _logger.LogInformation("NEW EINSATZ!\nID: " + einsatz.Id + "\nDatum: " + einsatz.Date + "\nALARRRRMMM: " + einsatz.StartedTime
+                        + "\nStichwort: " + einsatz.EinsatzInfo + "\nOrt: " + einsatz.Location + "\nFahrzeuge: " + einsatz.Vehicles
+                        + "\nEnde: " + einsatz.EndTime + "\nSchleife: " + einsatz.EinsatzSchleifen + "\nPresseartikel: " + einsatz.PressLink);
 
                     var payload = new Payload()
                     {
-                        Id = einsatzId,
+                        Id = einsatz.Id,
                         Tag = "neuer-einsatz",
-                        Title = "Einsatz: " + einsatzStichwort,
-                        Content = $"{einsatzId}: {einsatzStart} - {einsatzEnde}\nOrt: {einsatzOrt}\nFahrzeuge: {einsatzFahrzeuge}\nSchleife: {schleife}\n{einsatzDatum}",
-                        PressLink = presseLink,
+                        Title = "Einsatz: " + einsatz.EinsatzInfo,
+                        Content = $"{einsatz.Id}: {einsatz.StartedTime} - {einsatz.EndTime}\nOrt: {einsatz.Location}\nFahrzeuge: {einsatz.Vehicles}\nSchleife: {einsatz.EinsatzSchleifen}\n{einsatz.Date}",
+                        PressLink = einsatz.PressLink,
                     };
                     await _pushService.SendPushNotificationToAll(payload);
-                    currentOperationId = einsatzId;
+                    currentEinsatz = einsatz;
                 }
                 catch (Exception ex)
                 {
-                    await Console.Out.WriteLineAsync(ex.Message);
+                    _logger.LogCritical(ex.Message);
                 }
             }, TimeSpan.FromMinutes(_options.CheckForChangesIntervalInMinutes));
         }
 
+        public async Task<Einsatz?> ParseEinsatzFromEntry(IElement? tableEntry)
+        {
+            if (tableEntry == null)
+            {
+                _logger.LogError("Latest operationentry not found! (Invalid HTML doc?)");
+                return null;
+            }
+            var einsatzId = tableEntry.QuerySelector("td:nth-child(2)").TextContent.Trim().Replace(" ", string.Empty);
+            var einsatzDatum = tableEntry.QuerySelector("td:nth-child(3)").TextContent.Trim();
+            var einsatzStart = tableEntry.QuerySelector("td:nth-child(4)").TextContent.Trim();
+            var einsatzStichwort = tableEntry.QuerySelector("td:nth-child(5)").TextContent.Trim();
+            var einsatzOrt = tableEntry.QuerySelector("td:nth-child(6)").TextContent.Trim();
+            var einsatzFahrzeuge = tableEntry.QuerySelector("td:nth-child(7)").TextContent.Trim();
+            var einsatzEnde = tableEntry.QuerySelector("td:nth-child(8)").TextContent.Trim();
+            var schleife = tableEntry.QuerySelector("td:nth-child(9)").TextContent.Trim();
+            var presseLinkElement = tableEntry.QuerySelector("td:nth-child(10) a");
+            var presseLink = presseLinkElement == null ? null : presseLinkElement.Attributes.FirstOrDefault(attr => attr.Name == "href").Value;
+            return new Einsatz()
+            {
+                Id = einsatzId,
+                Date = einsatzDatum,
+                EinsatzInfo = einsatzStichwort,
+                EinsatzSchleifen = schleife,
+                EndTime = einsatzEnde,
+                StartedTime = einsatzStart,
+                Location = einsatzOrt,
+                Vehicles = einsatzFahrzeuge,
+                PressLink = presseLink
+            };
+        }
 
         public async Task PeriodicAsync(Func<Task> action, TimeSpan interval, 
             CancellationToken cancellationToken = default)
