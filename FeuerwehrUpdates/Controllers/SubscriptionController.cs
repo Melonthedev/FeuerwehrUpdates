@@ -11,10 +11,12 @@ namespace FeuerwehrUpdates.Controllers
     {
 
         private readonly FWUpdatesDbContext _context;
+        private readonly ILogger<SubscriptionController> _logger;
 
-        public SubscriptionController(FWUpdatesDbContext context)
+        public SubscriptionController(FWUpdatesDbContext context, ILogger<SubscriptionController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpPost("save")]
@@ -31,7 +33,7 @@ namespace FeuerwehrUpdates.Controllers
             };
             _context.Subscriptions.Add(subscriptionDTO);
             await _context.SaveChangesAsync();
-            await Console.Out.WriteLineAsync("New User has subscribed!");
+            _logger.LogInformation($"New User has subscribed! (P256DH {subscription.Keys.p256dh})");
             return Ok();
         }
     }

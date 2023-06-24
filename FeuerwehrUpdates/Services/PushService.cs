@@ -12,11 +12,13 @@ namespace FeuerwehrUpdates.Services
 
         private readonly FWUpdatesDbContext _context;
         private readonly FUOptions _options;
+        private readonly ILogger<PushService> _logger;
 
-        public PushService(IDbContextFactory<FWUpdatesDbContext> contextFactory, IOptions<FUOptions> options)
+        public PushService(IDbContextFactory<FWUpdatesDbContext> contextFactory, IOptions<FUOptions> options, ILogger<PushService> logger)
         {
             _context = contextFactory.CreateDbContext();
             _options = options.Value;
+            _logger = logger;
         }
 
         public async Task SendPushNotificationToAll(Payload payload)
@@ -37,11 +39,11 @@ namespace FeuerwehrUpdates.Services
             try
             {
                 await webPushClient.SendNotificationAsync(pushsubscription, JsonConvert.SerializeObject(payload), vapidDetails);
-                await Console.Out.WriteLineAsync("Sent!");
+                _logger.LogInformation($"Sent Push Notification! (P256DH {pushsubscription.P256DH})");
             }
             catch (Exception ex)
             {
-                await Console.Out.WriteLineAsync(ex.Message);
+                _logger.LogWarning(ex.Message);
             }
         }
     }

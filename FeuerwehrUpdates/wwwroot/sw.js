@@ -21,8 +21,8 @@ const urlB64ToUint8Array = base64String => {
 }
 
 const saveSubscription = async subscription => {
-  const SERVER_URL = 'https://feuerwehrupdates.melonthedev.wtf/api/Subscription/Save'
-  //const SERVER_URL = 'https://localhost:7047/api/Subscription/Save'
+  //const SERVER_URL = 'https://feuerwehrupdates.melonthedev.wtf/api/Subscription/Save'
+  const SERVER_URL = 'https://localhost:7047/api/Subscription/Save'
   const response = await fetch(SERVER_URL, {
     method: 'POST',
     headers: {
@@ -33,8 +33,13 @@ const saveSubscription = async subscription => {
   return response;
 }
 
-self.addEventListener('activate', async () => {
-  console.debug("[ServiceWorker] Activated!")
+self.addEventListener('activate', async (event) => {
+    event.waitUntil(self.clients.claim()); // Become available to all pages
+    console.debug("[ServiceWorker] Activated!");
+});
+
+self.addEventListener('install', function(event) {
+  event.waitUntil(self.skipWaiting()); // Activate worker immediately
 });
 
 self.addEventListener('message', (e) => {
@@ -46,12 +51,11 @@ async function createSubscription() {
     const applicationServerKey = urlB64ToUint8Array('BH-9RrroeoEqN37m3SHxOVU97dSOEud8mrkyFAp-O8clW3zNdHjvfwfZ6vwkiR61gob7UqQALHOEoG57qTaK6B4')
     const options = { applicationServerKey, userVisibleOnly: true }
     const subscription = await self.registration.pushManager.subscribe(options)
-    console.log(JSON.stringify(subscription))
-    console.log(subscription)
+    console.log(subscription);
     const response = await saveSubscription(subscription)
-    console.log(response)
+    console.log(response);
   } catch (err) {
-    console.error('Error', err)
+    console.error('Error', err);
   }
 }
 

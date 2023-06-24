@@ -5,10 +5,11 @@ document.querySelector("#demo").addEventListener("click", () => {
   askForPermission(() => sendNotification());
 });
   
+navigator.serviceWorker.ready.then(worker => {
 document.querySelector("#click").addEventListener("click", () => {
-  navigator.serviceWorker.ready.then(worker => {
     //worker.active.postMessage(loggingdata); 
     navigator.serviceWorker.controller.postMessage({'cmd': 'subscribe'});
+    //worker.controller.postMessage({'cmd': 'subscribe'});
   });
 });
 
@@ -17,9 +18,8 @@ function askForPermission(granted) {
     if(consent === 'granted') {
       granted();
     } else {
-      const h3 = document.createElement("h3");
+      const h3 = document.getElementById("information");
       h3.innerText = "Notification Permission is required for Fewerwehrupdates to work!";
-      document.body.appendChild(h3);
     }
   });
 }
