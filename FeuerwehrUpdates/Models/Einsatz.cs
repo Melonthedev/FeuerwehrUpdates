@@ -2,7 +2,10 @@
 {
     public class Einsatz
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
+        public string DocumentName { get; set; }
+        public string DocumentUrl { get; set; }
+        public string EinsatzId { get; set; }
         public string? Date { get; set; }
         public string? StartedTime { get; set; }
         public string? EndTime { get; set; }

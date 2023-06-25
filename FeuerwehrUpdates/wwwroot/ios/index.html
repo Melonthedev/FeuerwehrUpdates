@@ -7,24 +7,30 @@
     <link rel="shortcut icon" href="/image.png" type="image/x-icon">
     <link rel="stylesheet" href="/style.css">
     <script src="/push-notifications.js"></script>
-    <script src="/script.js" defer></script>
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon.png">
-    <link rel="apple-touch-startup-image" href="/image.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="apple-touch-icon" href="/image.png">
 </head>
 <body>
     <div class="content">
         <img src="/image.png" alt="Feuerwehrauto" width="200px">
         <h1>Feuerwehr Updates</h1>
         <h2>Bekomme als erster die Einsätze der Feuerwehr per Benachrichtigung auf's Handy!</h2>
-        <!-- <div class="optionbox"><input id="updateNotifications" class="option" type="checkbox" checked=""></div> -->
-        <button id="demo">So sieht das aus</button>
-        <button id="click">Aktivieren!</button><br>
-        <button id="einsatzverlauf" onclick="document.location = '/einsatzverlauf'">Zum Einsatzverlauf</button>
+        <h3>Installation:</h3>
+        <h3><i>Du benötigst iOS 16.5 oder höher!</i></h3>
+        <h3>1. Klicke auf <span class="material-symbols-outlined">ios_share</span> Teilen</h3>
+        <h3>2. Klicke auf <br><span class="material-symbols-outlined">add_box</span> Zum Startbildschirm hinzufügen</h3>
+        <h3>3. Klicke oben rechts auf Hinzufügen</h3>
+        <h3>4. Fertig! Du kannst Feuerwehrupdates nun vom Startbildschirm aus öffnen</h3>
         <h3 id="information"></h3>
         <div class="space"></div>
     </div>
     
     <footer>Feuerwehr Updates © <a href="https://melonthedev.wtf">Melonthedev</a> 2023</footer>
 </body>
+<script>
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        document.location = "/";
+    }
+</script>
 </html>

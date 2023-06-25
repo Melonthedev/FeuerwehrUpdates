@@ -1,6 +1,6 @@
 * {
     padding: 0;
-    margin: 0;
+    /* margin: 0; */
     font-family: "Cascadia Code", Arial, Helvetica, sans-serif;
     text-align: center;
     color: white;
@@ -53,8 +53,8 @@ button:hover {
     color: rgb(204, 0, 0);
 }
 
-footer  {
-    position: fixed;
+footer {
+    position: relative;
     bottom: 0px;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -104,4 +104,17 @@ h4, h3 {
 
 .space {
     margin-bottom: 100px;
+}
+
+.einsatzentry {
+    width: 50%;
+    border: 1px solid white;
+    border-radius: 10px;
+    margin: auto;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.einsatzentry > h3 {
+    margin-top: 0;
 }

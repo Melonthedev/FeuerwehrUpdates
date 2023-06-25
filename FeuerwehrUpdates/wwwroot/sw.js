@@ -1,10 +1,11 @@
 self.addEventListener("notificationclick", (event) => {
-    if (event.notification.action === "showmore") {
-        event.waitUntil(clients.openWindow("/?operationid=" + event.notification.data.operationid));
-        event.notification.close();
-    } else if (event.action === "openarticle") {
-        event.waitUntil(clients.openWindow(event.notification.data.articlelink));
-    }
+  event.notification.close();
+  console.log(event)
+  if (event.action === "openarticle") {
+    event.waitUntil(clients.openWindow(event.notification.data.articlelink));
+  } else {
+    event.waitUntil(clients.openWindow("/einsatz?id=" + event.notification.data.id));
+  }
 });
 
 // urlB64ToUint8Array is a magic function that will encode the base64 public key
@@ -22,7 +23,7 @@ const urlB64ToUint8Array = base64String => {
 
 const saveSubscription = async subscription => {
   //const SERVER_URL = 'https://feuerwehrupdates.melonthedev.wtf/api/Subscription/Save'
-  const SERVER_URL = 'https://localhost:7047/api/Subscription/Save'
+  const SERVER_URL = '/api/Subscription/Save'
   const response = await fetch(SERVER_URL, {
     method: 'POST',
     headers: {
@@ -42,8 +43,10 @@ self.addEventListener('install', function(event) {
   event.waitUntil(self.skipWaiting()); // Activate worker immediately
 });
 
-self.addEventListener('message', (e) => {
-  if (e.data.cmd == "subscribe") createSubscription();
+self.addEventListener('message', async (e) => {
+  var response = await createSubscription();
+  console.log(response);
+  if (e.data.cmd == "subscribe") e.source.postMessage(response);
 })
 
 async function createSubscription() {
@@ -54,8 +57,10 @@ async function createSubscription() {
     console.log(subscription);
     const response = await saveSubscription(subscription)
     console.log(response);
+    return { "success" : true, "error" : null };
   } catch (err) {
     console.error('Error', err);
+    return { "success" : false, "error" : err };
   }
 }
 
@@ -63,10 +68,10 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
   const data = event.data.json();
   console.debug(data);
-  event.waitUntil(sendNotification(data.Title, data.Content, data.Tag, data.PressLink, data.Id));
+  event.waitUntil(sendNotification(data.Title, data.Content, data.Tag, data.PressLink, data.OperationId, data.Id));
 });
 
-function sendNotification(title, content, tag, presslink, id) {
+function sendNotification(title, content, tag, presslink, operationid, id) {
   let buttons = [{ action: "showmore", title: "Mehr infos" }];
   if (presslink != null && presslink !== "") 
     buttons = [{ action: "showmore", title: "Mehr infos" }, { action: "openarticle", title: "Presseartikel" }];
@@ -77,7 +82,7 @@ function sendNotification(title, content, tag, presslink, id) {
     badge: "./badge.png",
     tag: tag,
     actions: buttons,
-    data: { "operationid" : id, "articlelink" : presslink }
+    data: { "id" : id, "articlelink" : presslink }
   }
   this.registration.showNotification(title, options);
 }

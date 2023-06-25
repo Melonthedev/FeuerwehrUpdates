@@ -29,14 +29,14 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     IDbContextFactory<FWUpdatesDbContext> contextFactory =
             scope.ServiceProvider.GetRequiredService<IDbContextFactory<FWUpdatesDbContext>>();
-    new EinsatzListener(services.GetService<PushService>(), 
-        services.GetService<IOptions<FUOptions>>(),
-        services.GetService<ILogger<EinsatzListener>>());
-
     try
     {
         var context = services.GetRequiredService<FWUpdatesDbContext>();
         await context.Database.MigrateAsync();
+        new EinsatzListener(services.GetService<PushService>(),
+        services.GetService<IOptions<FUOptions>>(),
+        services.GetService<ILogger<EinsatzListener>>(),
+        contextFactory);
     }
     catch (Exception ex)
     {

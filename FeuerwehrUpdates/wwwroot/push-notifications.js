@@ -20,7 +20,7 @@ function sendNotification() {
     tag: "neuer-einsatz",
     badge: "./badge.png",
     actions: [{ action: "showmore", title: "Mehr infos" }, { action: "openarticle", title: "Presseartikel" }],
-    data: { "operationid" : "demo", "articlelink" : "https://youtu.be/dQw4w9WgXcQ" }
+    data: { "id" : "demo", "operationid" : "demo", "articlelink" : "https://youtu.be/dQw4w9WgXcQ" }
   };
   navigator.serviceWorker.ready.then((serviceWorker) => {
     serviceWorker.showNotification(title, options);

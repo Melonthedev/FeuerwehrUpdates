@@ -2,7 +2,8 @@
 {
     public class Payload
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
+        public string OperationId { get; set; }
 
         public string Tag { get; set; }
 

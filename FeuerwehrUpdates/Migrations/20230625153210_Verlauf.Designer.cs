@@ -3,6 +3,7 @@ using System;
 using FeuerwehrUpdates.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FeuerwehrUpdates.Migrations
 {
     [DbContext(typeof(FWUpdatesDbContext))]
-    partial class FWUpdatesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230625153210_Verlauf")]
+    partial class Verlauf
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.7");
@@ -70,10 +73,6 @@ namespace FeuerwehrUpdates.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DocumentName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DocumentUrl")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

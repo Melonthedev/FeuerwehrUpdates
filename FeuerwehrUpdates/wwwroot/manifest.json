@@ -4,14 +4,27 @@
     "short_name": "Feuerwehr Updates",
     "description": "Die aktuellsten Feuerwehreinsätze per Benachrichtigung auf's Handy",
     "start_url": "/",
-    "background_color": "#2f3d58",
-    "theme_color": "#2f3d58",
+    "background_color": "#572222",
+    "theme_color": "#572222",
     "orientation": "any",
     "display": "standalone",
     "icons": [
         {
-            "src": "./badge.png",
+            "src": "/icon.png",
             "sizes": "512x512"
+        }
+    ],
+    "categories": [ "education", "news" ],
+    "shortcuts": [
+        {
+            "name": "Einsatzverlauf",
+            "url": "/einsatzverlauf",
+            "icons": [
+                {
+                    "src": "/badge.png",
+                    "sizes": "512x512"
+                }
+            ]
         }
     ]
 }

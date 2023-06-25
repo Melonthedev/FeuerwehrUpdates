@@ -1,5 +1,6 @@
 ﻿using FeuerwehrUpdates.Models;
 using FeuerwehrUpdates.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 
@@ -12,14 +13,16 @@ namespace FeuerwehrUpdates
         private readonly PushService _pushService;
         private readonly FUOptions _options;
         private readonly ILogger<EinsatzListener> _logger;
+        private readonly IDbContextFactory<FWUpdatesDbContext> _dbContextFactory;
 
         public List<DocumentChecker> Checkers = new List<DocumentChecker>();
 
-        public EinsatzListener(PushService pushService, IOptions<FUOptions> options, ILogger<EinsatzListener> logger)
+        public EinsatzListener(PushService pushService, IOptions<FUOptions> options, ILogger<EinsatzListener> logger, IDbContextFactory<FWUpdatesDbContext> dbContextFactory)
         {
             _pushService = pushService;
             _options = options.Value;
             _logger = logger;
+            _dbContextFactory = dbContextFactory;
             Initialize();
         }
 
@@ -29,7 +32,7 @@ namespace FeuerwehrUpdates
 
             foreach (FUDocument document in _options.Documents)
             {
-                Checkers.Add(new DocumentChecker(document, _pushService, _logger));
+                Checkers.Add(new DocumentChecker(document, _pushService, _logger, _dbContextFactory));
             }
 
             Task CheckForChanges = PeriodicAsync(async () =>

@@ -1,4 +1,5 @@
 ﻿using FeuerwehrUpdates.DTOs;
+using FeuerwehrUpdates.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FeuerwehrUpdates.Services
@@ -11,6 +12,7 @@ namespace FeuerwehrUpdates.Services
 
         public DbSet<SubscriptionDTO> Subscriptions { get; set; }
         public DbSet<KeysDTO> Keys { get; set; }
+        public DbSet<Einsatz> Einsaetze { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
