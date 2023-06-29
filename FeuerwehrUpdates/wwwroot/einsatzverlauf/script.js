@@ -34,5 +34,5 @@ function createEntry(entry) {
     location.innerText = entry.location;
     container.appendChild(location);
     container.onclick = () => document.location = "/einsatz/?id=" + entry.id;
-    document.querySelector("#entries").appendChild(container);
+    document.querySelector("#entries").prepend(container);
 } 
